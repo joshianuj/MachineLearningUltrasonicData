@@ -1,2 +1,4 @@
 .DS_Store
 DataCleaning/NewData
+__pycache__
+.vscode
