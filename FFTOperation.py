@@ -18,9 +18,9 @@ def fft_with_filter(data, low_pass=30000, high_pass = 50000, fs= 1e6):
 
 		signal = ifft(cut_high_signal)
 
-		abs_signal = []
-		for n in np.abs(cut_high_signal):
-			if n != 0:
-				abs_signal.append([abs(n)])
-		signal_set.append(abs_signal)
+		# abs_signal = []
+		# for n in np.abs(cut_high_signal):
+		# 	if n != 0:
+		# 		abs_signal.append([abs(n)])
+		signal_set.append(np.abs(cut_high_signal))
 	return signal_set

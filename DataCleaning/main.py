@@ -23,7 +23,7 @@ def LoadWallDataFrame():
 def getFolderlist(main='Stopper'):
     distance = np.arange(60, 300, 10)
     a = ['./DataCleaning/NewData/%s/*/*_%scm_AS_*.dat'%(main,x) for x in distance]
-    aggregate_folder = [list_filenames(filename) for filename in a]
+    aggregate_folder = [    list_filenames(filename) for filename in a]
     return aggregate_folder
 
 def createStopperDataFrameToFile(filename='Stopper'):
