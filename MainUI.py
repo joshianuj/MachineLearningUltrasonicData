@@ -15,12 +15,14 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 import scipy.fftpack
+import re
 
 from FFTOperation import fft_with_filter
 from sklearn.neural_network import MLPClassifier
 
 from PlotCanvas import PlotCanvas
-    
+from sklearn.metrics import confusion_matrix
+from sklearn.metrics import accuracy_score
 class UITable(QTableWidget):
     def __init__(self, parent=None, row=5, column=3):
         QTableWidget.__init__(self, parent)
@@ -59,10 +61,11 @@ class Widget(QWidget):
         self.m = PlotCanvas(self, width=4, height=7)
         self.m.move(500,0)
 
-        # class variables
+        # class variablesfs
         self.files_list = []
         self.fft_list = []
         self.target_index = []
+        self.y = []
 
         for elem in self.ui.children():
             name = elem.objectName()
@@ -78,7 +81,7 @@ class Widget(QWidget):
                 for child_elem in elem.children():
                     child_name = child_elem.objectName()
                     if child_name == 'btn_load_file':
-                        child_elem.clicked.connect(self.load_file)
+                        child_elem.clicked.connect(self.browse_file)
                     elif child_name == 'btn_train':
                         child_elem.clicked.connect(self.start_fft)
                         child_elem.clicked.connect(self.train)
@@ -110,10 +113,18 @@ class Widget(QWidget):
                     child_name = child_elem.objectName()
                     if child_name == 'btn_load_predict_file':
                         child_elem.clicked.connect(self.load_predict_file)
+                    elif child_name == 'txt_sample_freq':
+                        self.sample_freq = child_elem
                     elif child_name == 'txt_predict':
                         self.txt_predict = child_elem
                     elif child_name == 'btn_predict':
                         child_elem.clicked.connect(self.start_prediction)
+                    elif child_name == 'btn_plot_confusion':
+                        child_elem.clicked.connect(self.plot_confusion)
+                    elif child_name == 'txt_real_result':
+                        self.txt_real_result = child_elem
+                    elif child_name == 'txt_accuracy':
+                        self.txt_accuracy = child_elem
 
     def select_model(self):
         self.model_frame.show()
@@ -121,8 +132,9 @@ class Widget(QWidget):
 
     def load_model(self):
         filename = QFileDialog.getOpenFileName(w, 'Open File', './model/')
-        self.browse_model_input.setText(filename[0])
-        self.clf = pickle.load(open(filename[0], 'rb'))
+        if filename:
+            self.browse_model_input.setText(filename[0])
+            self.clf = pickle.load(open(filename[0], 'rb'))
 
     def save_model(self):
         file_name = self.model_file_name.text()
@@ -140,13 +152,14 @@ class Widget(QWidget):
             self.table.setItem(row, 2, QTableWidgetItem(str(row)))
             row += 1
 
-    def load_file(self):
-        filename = QFileDialog.getOpenFileName(w, 'Open File', './')
-        self.files_list.append(filename[0])
-        self.load_items()
+    def browse_file(self):
+        filename = QFileDialog.getOpenFileName(w, 'Open File', './data/all/')
+        if filename:
+            self.files_list.append(filename[0])
+            self.load_items()
     
     def load_predict_file(self):
-        filename = QFileDialog.getOpenFileName(w, 'Open File', './model/')
+        filename = QFileDialog.getOpenFileName(w, 'Open File', './data/predict/')
         self.predict_file = filename[0]
         self.txt_predict.setText(self.predict_file)
     
@@ -157,30 +170,42 @@ class Widget(QWidget):
         # std = np.std(data_set)
         # median = np.median(data_set)
         # feature = [mean, median, std ]
-        features = []
+        X = []
         for f_list in data_set:
-            features += [np.ravel(f_list).tolist()]
-        result = self.clf.predict(features)
+            X += [np.ravel(f_list).tolist()]
+        from sklearn import preprocessing
+        X = preprocessing.normalize(X)
+        result = self.clf.predict(X)
+        self.y = result
+        print(result)
         self.m.plot(result)
 
     def start_fft(self):
-        try:
-            self.fft_list =[]
-            for file in self.files_list:
-                df = pd.read_csv(file, header=None)
-                data = fft_with_filter(df, self.low_pass.text(), self.high_pass.text())
-                self.target_index.append(len(data))
-                self.fft_list += data
-        except Exception: 
-            pass
-        
+        self.fft_list =[]
+        for file in self.files_list:
+            df = pd.read_csv(file, header=None)
+            data = fft_with_filter(df, self.low_pass.text(), self.high_pass.text())
+            self.target_index.append(len(data))
+            self.fft_list += data
+
+    def plot_confusion(self):
+        if len(self.y) and len(self.txt_real_result.text()):
+            # text = [int(self.txt_real_result.text())]*len(self.y)
+            text = [item.strip() for item in self.txt_real_result.text().split(',')]
+            cm = confusion_matrix(self.y, text)
+            score = accuracy_score(self.y, text)
+            self.txt_accuracy.setText(str(score))
+            self.m.matrixPlotConfusion(self.y, text)
+
     def train(self):
         targets = []
         y = []
         index = 0
         for t_i in self.target_index:
             targets += [index]*t_i
-            y += [int(self.table.item(index, 2).text())]*t_i
+            if self.table.item(index, 2) and self.table.item(index, 2).text():
+                # y += [int(self.table.item(index, 2).text())]*t_i
+                y += [self.table.item(index, 2).text()]*t_i
             index +=1
         # for index, data in enumerate(self.fft_list):
         #     mean = np.mean(data)
@@ -191,13 +216,14 @@ class Widget(QWidget):
         #     features.append(feature)
         #     targets.append([index])
 
-        self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(4,), random_state=1)
+        self.clf = MLPClassifier(solver='lbfgs', alpha=1e-5,hidden_layer_sizes=(15,3), random_state=1)
         X = []
         for f_list in self.fft_list:
             X += [np.ravel(f_list).tolist()]
-        
+        from sklearn import preprocessing
+        X = preprocessing.normalize(X)
         self.clf.fit(X, y)
-        self.m.roc_plot(self.clf, X, y)
+        # self.m.roc_plot(self.clf, X, y)
         return
 
 if __name__ == '__main__':

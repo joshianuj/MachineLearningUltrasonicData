@@ -244,7 +244,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>FFt and filter (default 30MHZ -50MHZ)</string>
+     <string>FFt and filter (default 30KHZ -50KHZ)</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_9">
@@ -319,7 +319,7 @@
      <x>990</x>
      <y>30</y>
      <width>301</width>
-     <height>261</height>
+     <height>591</height>
     </rect>
    </property>
    <property name="frameShape">
@@ -344,7 +344,7 @@
    <widget class="QLineEdit" name="txt_predict">
     <property name="geometry">
      <rect>
-      <x>110</x>
+      <x>100</x>
       <y>20</y>
       <width>191</width>
       <height>21</height>
@@ -375,6 +375,65 @@
     </property>
     <property name="text">
      <string>Start Prediction</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>150</y>
+      <width>181</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Enter real output data</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btn_plot_confusion">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>380</y>
+      <width>171</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Plot Confusion Matrix</string>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_real_result">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>190</y>
+      <width>281</width>
+      <height>181</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="txt_accuracy">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>440</y>
+      <width>191</width>
+      <height>21</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>440</y>
+      <width>91</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Accuracy</string>
     </property>
    </widget>
   </widget>

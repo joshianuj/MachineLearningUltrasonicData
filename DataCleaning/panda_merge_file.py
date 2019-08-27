@@ -1,5 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+#!/usr/bin/envpython3
+#-*-coding: utf-8 -*-
 """
 Created on Tue Jan 22 10:31:49 2019
 
@@ -16,7 +16,7 @@ def list_filenames(filename='Stopper/1st/*_80'):
     #return pd.concat([pd.read_csv(f, header=None) for f in filenames])
     return filenames
 
-def getFolderlist(main='Stopper', min=60, max=310):
+def getFolderlist(main='Stopper', min=80, max=280):
     distance = np.arange(min, max, 10)
     if main == 'Stopper':
       a = ['./DataCleaning/NewData/%s/*/*_%scm_AS_*.dat'%(main,x) for x in distance]
@@ -56,9 +56,10 @@ def allInOneDataframe(filename='Stopper', min=80,max=110):
       folder_name = folder[0].split('/')[-1].split('.')
       folder_name = folder_name[0][-14:]
       all_dataframe = pd.concat([all_dataframe, data_frames])
-    train, predict = train_test_split(all_dataframe, test_size=0.3)
-    train.to_csv('./data/all/%s_train_%s_to_%s.csv'%(filename,min,max), index=False, header=None)
-    predict.to_csv('./data/all/%s_predict_%s_to_%s.csv'%(filename,min,max), index=False, header=None)
+    train, predict = train_test_split(all_dataframe, test_size=0.3,random_state=42)
+    train.to_csv('./final_data/%s_train_%s_to_%s.csv'%(filename,min,max), index=False, header=None)
+    predict.to_csv('./final_data/%s_predict_%s_to_%s.csv'%(filename,min,max), index=False, header=None)
+    # all_dataframe.to_csv('./final_data/%s_overall_80to270.csv'%(filename), index=False, header=None)
 
 def allInOneDataframe_all(filename='Stopper', min=80,max=110):
     folders = getFolderlist(filename,min,max)
@@ -72,13 +73,28 @@ def allInOneDataframe_all(filename='Stopper', min=80,max=110):
       all_dataframe = pd.concat([all_dataframe, data_frames])
     all_dataframe.to_csv('./data/all/_all_%s_%s_to_%s.csv'%(filename,min,max), index=False, header=None)
 
+def newData_in_one(filename='Stopper', min=80,max=110):
+    filename_list = './data/all/new_data_april_last/%s_*.csv'%filename
+    aggregate_folder = list_filenames(filename_list)
+    # remove empty list
+    folders = [x for x in aggregate_folder if x]
+    #for stopper
+    all_dataframe = pd.DataFrame()
+    for folder in folders:
+      data_frames = pd.read_csv(folder, header=None)
+      all_dataframe = pd.concat([all_dataframe, data_frames])
+    # train, predict = train_test_split(all_dataframe, test_size=0.3,random_state=42)
+    all_dataframe.to_csv('./final_data/%s_overall.csv'%(filename), index=False, header=None)
+    # predict.to_csv('./final_data/%s_predict_aggregate.csv'%(filename), index=False, header=None)
+
 if __name__ == '__main__':
     # createDataFrametoFile('Stopper')
     # createDataFrametoFile('Wall_Collection')
     # noSplitCreateDataFrame('Stopper')
     # noSplitCreateDataFrame('Wall_Collection')
-    # allInOneDataframe('Stopper',80,180)
-    # allInOneDataframe('Wall_Collection',80,180)
+    allInOneDataframe('Stopper',80,270)
+    allInOneDataframe('Wall_Collection',80,270)
     
-    allInOneDataframe_all('Stopper',80,180)
-    allInOneDataframe_all('Wall_Collection',80,180)
+    # allInOneDataframe_all('Stopper',80,180)
+    # allInOneDataframe_all('Wall_Collection',80,180)
+    # newData_in_one('Wall')
